@@ -1,5 +1,5 @@
 export const CANVAS_WIDTH = 400;
-export const CANVAS_HEIGHT = 600;
+export const CANVAS_HEIGHT = 500;
 
 export const SPRITES = {
   // Linha 0 (y = 0)

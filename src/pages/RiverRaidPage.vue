@@ -86,6 +86,11 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, SPRITES } from '../game/constantes';
 import { Bullet, Enemy, Explosion } from '../types/game.types';
+import atlasSrc from 'src/assets/imagesraid.png';
+
+// E na inicialização da imagem:
+const atlasImage = new Image();
+atlasImage.src = atlasSrc;
 
 const router = useRouter();
 const gameCanvas = ref<HTMLCanvasElement | null>(null);
@@ -147,8 +152,7 @@ const handleBlur = () => {
 };
 
 // Carregar o Atlas de Sprites gerado (64x64)
-const atlasImage = new Image();
-atlasImage.src = '/images/imagesraid.png';
+atlasImage.src = 'images/imagesraid.png';
 
 const player = ref({
   x: 180,

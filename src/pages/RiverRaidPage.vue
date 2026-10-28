@@ -86,9 +86,8 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, SPRITES } from '../game/constantes';
 import { Bullet, Enemy, Explosion } from '../types/game.types';
-import atlasSrc from 'src/assets/imagesraid.png';
+import atlasSrc from '../assets/imagesraid.png';
 
-// E na inicialização da imagem:
 const atlasImage = new Image();
 atlasImage.src = atlasSrc;
 
@@ -107,6 +106,14 @@ const GAME_HEIGHT = Math.round(CANVAS_HEIGHT * 0.9);
 
 // Controlo de teclas reativo e fiável
 const keys = reactive<{ [key: string]: boolean }>({});
+
+// Gerador equilibrado de tipos (Jatos e Helicópteros são mais comuns, Combustível é raro)
+const getRandomEnemyType = (): 'jet' | 'heli' | 'fuel' => {
+  const rand = Math.random();
+  if (rand < 0.45) return 'jet';
+  if (rand < 0.85) return 'heli';
+  return 'fuel'; // Apenas 15% de chance
+};
 
 const handleKeyDown = (e: KeyboardEvent) => {
   if (isGameOver.value) return;
@@ -151,9 +158,6 @@ const handleBlur = () => {
   });
 };
 
-// Carregar o Atlas de Sprites gerado (64x64)
-atlasImage.src = 'images/imagesraid.png';
-
 const player = ref({
   x: 180,
   y: GAME_HEIGHT - 80,
@@ -166,13 +170,13 @@ const player = ref({
 
 const bullets = ref<Bullet[]>([]);
 
-// Inimigos distribuídos ao longo do rio com maior velocidade
+// Inimigos iniciais equilibrados
 const enemies = ref<Enemy[]>([
   { x: 80, y: -50, width: 40, height: 40, speed: 3.5, type: 'jet' },
   { x: 200, y: -180, width: 40, height: 40, speed: 3.0, type: 'fuel' },
   { x: 300, y: -320, width: 40, height: 40, speed: 4.0, type: 'heli' },
   { x: 140, y: -480, width: 40, height: 40, speed: 3.8, type: 'jet' },
-  { x: 250, y: -620, width: 40, height: 40, speed: 3.2, type: 'fuel' },
+  { x: 250, y: -620, width: 40, height: 40, speed: 3.2, type: 'heli' },
 ]);
 
 const explosions = ref<Explosion[]>([]);
@@ -240,6 +244,7 @@ const update = () => {
     if (en.y > GAME_HEIGHT) {
       en.y = -80;
       en.x = Math.random() * (CANVAS_WIDTH - 80) + 30;
+      en.type = getRandomEnemyType(); // Recicla com novo tipo aleatório equilibrado
     }
 
     // Recolher Combustível
@@ -253,6 +258,7 @@ const update = () => {
       player.value.fuel = Math.min(100, player.value.fuel + 35);
       en.y = -80;
       en.x = Math.random() * (CANVAS_WIDTH - 80) + 30;
+      en.type = getRandomEnemyType(); // Deixa de ser combustível após recolhido
       score.value += 50;
     }
 
@@ -268,16 +274,13 @@ const update = () => {
       explosions.value.push({ x: player.value.x, y: player.value.y, frame: 0, timer: 0 });
 
       enemies.value.splice(index, 1);
-      const types: ('jet' | 'heli' | 'fuel')[] = ['jet', 'heli', 'fuel'];
-      const randomType = types[Math.floor(Math.random() * types.length)] as 'jet' | 'heli' | 'fuel';
-
       enemies.value.push({
         x: Math.random() * (CANVAS_WIDTH - 80) + 30,
         y: -80,
         width: 40,
         height: 40,
         speed: 3.5 + Math.random() * 1.5,
-        type: randomType,
+        type: getRandomEnemyType(),
       });
 
       handlePlayerCrash();
@@ -296,17 +299,13 @@ const update = () => {
         bullets.value.splice(bIndex, 1);
         score.value += en.type === 'fuel' ? 100 : 200;
 
-        const types: ('jet' | 'heli' | 'fuel')[] = ['jet', 'heli', 'fuel'];
-        const randomType = types[Math.floor(Math.random() * types.length)] as
-          'jet' | 'heli' | 'fuel';
-
         enemies.value.push({
           x: Math.random() * (CANVAS_WIDTH - 80) + 30,
           y: -80,
           width: 40,
           height: 40,
           speed: 3.5 + Math.random() * 1.5,
-          type: randomType,
+          type: getRandomEnemyType(),
         });
       }
     });
@@ -360,7 +359,7 @@ const resetGame = () => {
     { x: 200, y: -180, width: 40, height: 40, speed: 3.0, type: 'fuel' },
     { x: 300, y: -320, width: 40, height: 40, speed: 4.0, type: 'heli' },
     { x: 140, y: -480, width: 40, height: 40, speed: 3.8, type: 'jet' },
-    { x: 250, y: -620, width: 40, height: 40, speed: 3.2, type: 'fuel' },
+    { x: 250, y: -620, width: 40, height: 40, speed: 3.2, type: 'heli' },
   ];
 };
 
@@ -375,7 +374,7 @@ const showGameOverModal = (title: string, message: string) => {
 };
 
 const draw = (ctx: CanvasRenderingContext2D) => {
-  // 1. Fundo do Rio (Modificado para Azul)
+  // 1. Fundo do Rio (Azul)
   ctx.fillStyle = '#1b4965';
   ctx.fillRect(0, 0, CANVAS_WIDTH, GAME_HEIGHT);
 
@@ -481,7 +480,7 @@ const gameLoop = () => {
 .game-canvas {
   border: 3px solid rgba(212, 175, 55, 0.6);
   border-radius: 12px;
-  background-color: #1b4965; /* Modificado para Azul */
+  background-color: #1b4965;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 </style>

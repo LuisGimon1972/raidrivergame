@@ -50,7 +50,8 @@ export default defineConfig((/* ctx */) => {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: './',
+      //publicPath: './',
+      publicPath: '/raid-game-web',
       // analyze: true,
       // env: {},
       // rawDefine: {}

@@ -50,6 +50,83 @@
       <div class="text-caption text-grey-4 text-center q-mt-xs">
         <b>W / A / S / D</b> ou <b>Setas</b> para mover | <b>Espaço</b> para disparar
       </div>
+
+      <!-- Controles Virtuais para Dispositivos Táteis (D-Pad + Botão de Disparo) -->
+      <div
+        class="row justify-between items-center q-mt-md full-width"
+        :style="{ maxWidth: CANVAS_WIDTH + 'px' }"
+      >
+        <!-- D-Pad em T Invertido (Esquerda, Cima, Baixo, Direita) -->
+        <div class="column items-center d-pad-container">
+          <!-- Seta Cima -->
+          <q-btn
+            color="amber-8"
+            text-color="dark"
+            icon="arrow_upward"
+            size="md"
+            class="d-pad-btn q-px-lg q-mb-xs"
+            @touchstart.prevent.stop="setKey('ArrowUp', true)"
+            @touchend.prevent.stop="setKey('ArrowUp', false)"
+            @mousedown.prevent="setKey('ArrowUp', true)"
+            @mouseup.prevent="setKey('ArrowUp', false)"
+            @mouseleave="setKey('ArrowUp', false)"
+          />
+
+          <!-- Segunda Fila: Esquerda, Baixo e Direita -->
+          <div class="row q-gutter-xs">
+            <q-btn
+              color="amber-8"
+              text-color="dark"
+              icon="arrow_back"
+              size="md"
+              class="d-pad-btn"
+              @touchstart.prevent.stop="setKey('ArrowLeft', true)"
+              @touchend.prevent.stop="setKey('ArrowLeft', false)"
+              @mousedown.prevent="setKey('ArrowLeft', true)"
+              @mouseup.prevent="setKey('ArrowLeft', false)"
+              @mouseleave="setKey('ArrowLeft', false)"
+            />
+            <q-btn
+              color="amber-8"
+              text-color="dark"
+              icon="arrow_downward"
+              size="md"
+              class="d-pad-btn"
+              @touchstart.prevent.stop="setKey('ArrowDown', true)"
+              @touchend.prevent.stop="setKey('ArrowDown', false)"
+              @mousedown.prevent="setKey('ArrowDown', true)"
+              @mouseup.prevent="setKey('ArrowDown', false)"
+              @mouseleave="setKey('ArrowDown', false)"
+            />
+            <q-btn
+              color="amber-8"
+              text-color="dark"
+              icon="arrow_forward"
+              size="md"
+              class="d-pad-btn"
+              @touchstart.prevent.stop="setKey('ArrowRight', true)"
+              @touchend.prevent.stop="setKey('ArrowRight', false)"
+              @mousedown.prevent="setKey('ArrowRight', true)"
+              @mouseup.prevent="setKey('ArrowRight', false)"
+              @mouseleave="setKey('ArrowRight', false)"
+            />
+          </div>
+        </div>
+
+        <!-- Botão de Disparo Separado -->
+        <div class="column items-center justify-center">
+          <q-btn
+            color="red-7"
+            text-color="white"
+            icon="bolt"
+            label="TIRO"
+            size="lg"
+            class="fire-btn shadow-5"
+            @touchstart.prevent.stop="fireBullet"
+            @click.stop="fireBullet"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Diálogo de Game Over -->
@@ -107,6 +184,24 @@ const GAME_HEIGHT = Math.round(CANVAS_HEIGHT * 0.9);
 // Controlo de teclas reativo e fiável
 const keys = reactive<{ [key: string]: boolean }>({});
 
+// Função auxiliar para gerenciar os cliques/toques virtuais
+const setKey = (code: string, isPressed: boolean) => {
+  if (isGameOver.value) return;
+  keys[code] = isPressed;
+};
+
+// Disparo explícito para o botão virtual
+const fireBullet = () => {
+  if (isGameOver.value) return;
+  bullets.value.push({
+    x: player.value.x + player.value.width / 2 - 4,
+    y: player.value.y,
+    width: 8,
+    height: 16,
+    speed: 8,
+  });
+};
+
 // Gerador equilibrado de tipos (Jatos e Helicópteros são mais comuns, Combustível é raro)
 const getRandomEnemyType = (): 'jet' | 'heli' | 'fuel' => {
   const rand = Math.random();
@@ -138,13 +233,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
   // Disparo com a Barra de Espaço
   if (e.code === 'Space') {
-    bullets.value.push({
-      x: player.value.x + player.value.width / 2 - 4,
-      y: player.value.y,
-      width: 8,
-      height: 16,
-      speed: 8,
-    });
+    fireBullet();
   }
 };
 
@@ -482,5 +571,24 @@ const gameLoop = () => {
   border-radius: 12px;
   background-color: #1b4965;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.d-pad-container {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.d-pad-btn {
+  min-width: 50px;
+  min-height: 45px;
+  font-weight: bold;
+}
+
+.fire-btn {
+  min-width: 90px;
+  min-height: 65px;
+  font-weight: bold;
+  border-radius: 8px;
 }
 </style>

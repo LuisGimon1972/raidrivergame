@@ -453,7 +453,10 @@ const resetGame = () => {
 };
 
 const exitGame = () => {
-  router.push('/');
+  window.close();
+  setTimeout(() => {
+    router.push('/');
+  }, 100);
 };
 
 const showGameOverModal = (title: string, message: string) => {
